@@ -1,0 +1,77 @@
+name: labaguetteraffinee
+description: "A new Flutter project."
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.5.4
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+
+  # Logging
+  logger: ^2.0.2
+
+  # For Material Icons
+  cupertino_icons: ^1.0.8
+
+  # State management
+  provider: ^6.1.2
+
+  # Fonts and Theming
+  google_fonts: ^5.0.0
+
+  # API Handling
+  dio: ^5.1.2
+
+  # Navigation
+  go_router: ^9.0.2
+
+  # JSON Serialization
+  json_serializable: ^6.6.1
+
+  # Forms Validation
+  flutter_form_builder: ^7.0.0
+
+  # Animations
+  lottie: ^2.4.1
+
+  # Local Storage
+  shared_preferences: ^2.1.1
+
+  # Flutter SVG (for vector assets)
+  flutter_svg: ^2.0.7
+  badges: ^3.1.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/images/welcome_image.png
+    - assets/images/baguette_xxl.jpeg
+    - assets/images/frite_raffinee.jpeg
+    - assets/images/croissant.jpeg
+    - assets/images/mach.jpg
+    - assets/images/burg.jpg
+    - assets/images/spag.jpg
+    - assets/images/sushi.jpg
+    - assets/images/pizza.jpg
+    - assets/images/ramen.jpg
+    - assets/images/soft.jpg
+    - assets/images/steak.jpg
+    - assets/images/couscous.webp
+    - assets/images/tajine.jpg
+    - assets/images/pastille.jpg
+    - assets/images/harira.jpg
+    - assets/images/briouat.jpg
+    - assets/images/rfissa.jpg
+    - assets/images/seffa.jpg
+    - assets/images/zaalouk.jpg
