@@ -3,8 +3,9 @@ import 'package:go_router/go_router.dart';
 import 'screens/welcome_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/dashboard_screen.dart';
-import 'screens/orders_screen.dart';
+import 'screens/cart_screen.dart';
 import 'screens/dish_details_screen.dart';
+import 'screens/profile_screen.dart'; // Import ProfileScreen
 
 void main() {
   runApp(const MyApp());
@@ -25,7 +26,6 @@ class MyApp extends StatelessWidget {
 // GoRouter Configuration
 final GoRouter _router = GoRouter(
   initialLocation: '/welcome',
-  errorBuilder: (context, state) => const ErrorPage(), // Fallback for unknown routes
   routes: [
     GoRoute(
       path: '/welcome',
@@ -40,14 +40,14 @@ final GoRouter _router = GoRouter(
       builder: (context, state) => const DashboardScreen(),
     ),
     GoRoute(
-      path: '/orders',
+      path: '/cart', // Route for CartScreen
       builder: (context, state) {
         final cart = state.extra as List<Map<String, dynamic>>?;
-        return OrdersScreen(cart: cart ?? []);
+        return CartScreen(cart: cart ?? []);
       },
     ),
     GoRoute(
-      path: '/dishDetails',
+      path: '/dishDetails', // Route for DishDetailsScreen
       builder: (context, state) {
         final extra = state.extra as Map<String, dynamic>?;
         if (extra != null) {
@@ -58,10 +58,13 @@ final GoRouter _router = GoRouter(
             description: extra['description'],
             onAddToCart: extra['onAddToCart'],
           );
-        } else {
-          return const ErrorPage(); // Fallback if no data is passed
         }
+        return const ErrorPage(); // Show error page if data is missing
       },
+    ),
+    GoRoute(
+      path: '/profile', // Route for ProfileScreen
+      builder: (context, state) =>  ProfileScreen(),
     ),
   ],
 );
@@ -73,11 +76,14 @@ class ErrorPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Page Not Found")),
+      appBar: AppBar(
+        title: const Text("Page Not Found"),
+        backgroundColor: Colors.redAccent,
+      ),
       body: const Center(
         child: Text(
           "404 - Page Not Found",
-          style: TextStyle(fontSize: 18, color: Colors.redAccent),
+          style: TextStyle(fontSize: 20, color: Colors.redAccent),
         ),
       ),
     );

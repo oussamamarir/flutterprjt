@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
-class OrdersScreen extends StatelessWidget {
+class CartScreen extends StatelessWidget { // Updated class name
   final List<Map<String, dynamic>> cart;
 
-  const OrdersScreen({super.key, required this.cart}); // Accept cart as input
+  const CartScreen({super.key, required this.cart}); // Updated constructor
 
   @override
   Widget build(BuildContext context) {
@@ -12,14 +12,14 @@ class OrdersScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Your Orders"),
+        title: const Text("Your Cart"),
         centerTitle: true,
         backgroundColor: Colors.redAccent,
       ),
       body: cart.isEmpty
           ? const Center(
         child: Text(
-          "No orders yet! Start ordering now.",
+          "No items in the cart! Start adding now.",
           style: TextStyle(fontSize: 16, color: Colors.grey),
         ),
       )

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:badges/badges.dart' as badges;
-import 'orders_screen.dart';
+import 'package:dio/dio.dart';
+import 'cart_screen.dart';
 import 'dish_details_screen.dart';
+import 'profile_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -15,9 +17,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   // All dishes data
   final List<Map<String, dynamic>> dishes = [
-    {'name': 'La baguette raffinée XXL', 'price': 99.0, 'image': 'assets/images/baguette_xxl.jpeg'},
-    {'name': 'Frite Raffinée', 'price': 35.0, 'image': 'assets/images/frite_raffinee.jpeg'},
-    {'name': 'Croissant Classique', 'price': 15.0, 'image': 'assets/images/croissant.jpeg'},
+    {'id': 1, 'name': 'La baguette raffinée XXL', 'price': 99.0, 'image': 'assets/images/baguette_xxl.jpeg'},
+    {'id': 2, 'name': 'Frite Raffinée', 'price': 35.0, 'image': 'assets/images/frite_raffinee.jpeg'},
+    {'id': 3, 'name': 'Croissant Classique', 'price': 15.0, 'image': 'assets/images/croissant.jpeg'},
     {'name': 'Mac and Cheese', 'price': 12.0, 'image': 'assets/images/mach.jpg'},
     {'name': 'Classic Burger', 'price': 8.0, 'image': 'assets/images/burg.jpg'},
     {'name': 'Spaghetti Carbonara', 'price': 15.0, 'image': 'assets/images/spag.jpg'},
@@ -49,22 +51,37 @@ class _DashboardScreenState extends State<DashboardScreen> {
   void searchDishes(String query) {
     setState(() {
       filteredDishes = dishes
-          .where((dish) =>
-          dish['name'].toLowerCase().contains(query.toLowerCase()))
+          .where((dish) => dish['name'].toLowerCase().contains(query.toLowerCase()))
           .toList();
     });
   }
 
   // Add a dish to the cart
-  void addToCart(Map<String, dynamic> dish) {
-    setState(() {
-      cart.add(dish);
-    });
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text("${dish['name']} added to orders!"),
-      ),
-    );
+  Future<void> addToCart(Map<String, dynamic> dish) async {
+    final userId = 1; // Replace with the actual user ID
+    try {
+      final response = await Dio().post(
+        'http://10.0.2.2:8080/api/cart/$userId/add/${dish['id']}',
+        options: Options(headers: {"Content-Type": "application/json"}),
+      );
+
+      if (response.statusCode == 200) {
+        setState(() {
+          cart.add(dish); // Update local cart state
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("${dish['name']} added to cart!")),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Failed to add ${dish['name']} to cart.")),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error adding ${dish['name']} to cart: $e")),
+      );
+    }
   }
 
   @override
@@ -74,10 +91,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
       appBar: AppBar(
         elevation: 0,
         backgroundColor: Colors.white,
-        leading: IconButton(
-          icon: const Icon(Icons.menu, color: Colors.black),
-          onPressed: () {},
-        ),
         actions: [
           badges.Badge(
             position: badges.BadgePosition.topEnd(top: 0, end: 3),
@@ -92,7 +105,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => OrdersScreen(cart: cart),
+                    builder: (context) => CartScreen(cart: cart),
                   ),
                 );
               },
@@ -132,35 +145,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
           const SizedBox(height: 10),
 
-          // Check if filtered dishes list is empty
+          // Display dishes or "not found" message
           filteredDishes.isEmpty
               ? const Expanded(
             child: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.search_off, size: 100, color: Colors.grey),
-                  SizedBox(height: 10),
-                  Text(
-                    "Item not found",
-                    style: TextStyle(
-                        fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                  SizedBox(height: 5),
-                  Text(
-                    "Try searching the item with\na different keyword.",
-                    textAlign: TextAlign.center,
-                    style: TextStyle(color: Colors.grey),
-                  ),
-                ],
-              ),
+              child: Text("No dishes found"),
             ),
           )
               : Expanded(
             child: GridView.builder(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              gridDelegate:
-              const SliverGridDelegateWithFixedCrossAxisCount(
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 2,
                 crossAxisSpacing: 10,
                 mainAxisSpacing: 10,
@@ -178,8 +173,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           name: dish['name'],
                           price: dish['price'],
                           image: dish['image'],
-                          description:
-                          "A delicious and savory dish prepared to satisfy your taste buds.",
+                          description: "Savory and delicious!",
                           onAddToCart: () => addToCart(dish),
                         ),
                       ),
@@ -197,10 +191,32 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
         ],
       ),
+      bottomNavigationBar: BottomNavigationBar(
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: 'Home',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person),
+            label: 'Profile',
+          ),
+        ],
+        currentIndex: 0, // Default to Home tab
+        onTap: (index) {
+          if (index == 1) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) =>  ProfileScreen()),
+            );
+          }
+        },
+      ),
     );
   }
 }
 
+// Dish Card Widget
 class _DishCard extends StatelessWidget {
   final String name;
   final double price;
@@ -230,21 +246,16 @@ class _DishCard extends StatelessWidget {
         ],
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Expanded(
             child: ClipRRect(
-              borderRadius:
-              const BorderRadius.vertical(top: Radius.circular(16.0)),
-              child: Image.asset(image,
-                  fit: BoxFit.cover, width: double.infinity),
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(16.0)),
+              child: Image.asset(image, fit: BoxFit.cover, width: double.infinity),
             ),
           ),
-          Text(name,
-              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
-          Text("${price.toStringAsFixed(2)} MAD",
-              style: const TextStyle(color: Colors.redAccent)),
-          TextButton(onPressed: onAddToCart, child: const Text("Add to Orders")),
+          Text(name, style: const TextStyle(fontWeight: FontWeight.bold)),
+          Text("${price.toStringAsFixed(2)} MAD", style: const TextStyle(color: Colors.redAccent)),
+          TextButton(onPressed: onAddToCart, child: const Text("Add to Cart")),
         ],
       ),
     );

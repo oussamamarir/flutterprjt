@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
+import 'package:go_router/go_router.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -9,14 +10,58 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final TextEditingController fullNameController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
-  final TextEditingController confirmPasswordController = TextEditingController();
+  final TextEditingController confirmPasswordController = TextEditingController(); // Added this
+  final TextEditingController fullNameController = TextEditingController();
   final TextEditingController phoneController = TextEditingController();
 
   bool isLogin = true; // Toggle between Login and Signup
   bool isLoading = false;
+
+  // Handle Login Logic
+  Future<void> _handleLogin() async {
+    if (emailController.text.isEmpty || passwordController.text.isEmpty) {
+      _showSnackBar("Please fill in all fields.");
+      return;
+    }
+
+    setState(() {
+      isLoading = true;
+    });
+
+    try {
+      const String baseUrl = "http://10.0.2.2:8080/api/login";
+      Map<String, dynamic> loginData = {
+        "email": emailController.text,
+        "password": passwordController.text,
+      };
+
+      Response response = await Dio().post(
+        baseUrl,
+        data: loginData,
+        options: Options(
+          headers: {"Content-Type": "application/json"},
+          validateStatus: (status) => status! < 500,
+        ),
+      );
+
+      if (response.statusCode == 200) {
+        _showSnackBar("Login Successful! Redirecting...");
+        if (mounted) {
+          context.go('/dashboard'); // Navigate to dashboard
+        }
+      } else {
+        _showSnackBar("Login Failed: Invalid credentials.");
+      }
+    } catch (e) {
+      _showSnackBar("Login Failed: Unable to connect to the server.");
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
 
   // Handle Signup Logic
   Future<void> _handleSignup() async {
@@ -58,77 +103,19 @@ class _LoginScreenState extends State<LoginScreen> {
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        if (mounted) {
-          _showSnackBar("Signup Successful! Please login.");
-          setState(() {
-            isLogin = true;
-          });
-        }
+        _showSnackBar("Signup Successful! Please login.");
+        setState(() {
+          isLogin = true;
+        });
       } else {
-        if (mounted) {
-          _showSnackBar("Signup Failed: ${response.data}");
-        }
+        _showSnackBar("Signup Failed: ${response.data}");
       }
     } catch (e) {
-      if (mounted) {
-        _showSnackBar("Signup Failed: $e");
-      }
+      _showSnackBar("Signup Failed: $e");
     } finally {
-      if (mounted) {
-        setState(() {
-          isLoading = false;
-        });
-      }
-    }
-  }
-
-  // Handle Login Logic
-  Future<void> _handleLogin() async {
-    if (emailController.text.isEmpty || passwordController.text.isEmpty) {
-      _showSnackBar("Please fill in all fields.");
-      return;
-    }
-
-    setState(() {
-      isLoading = true;
-    });
-
-    try {
-      const String baseUrl = "http://10.0.2.2:8080/api/login";
-      Map<String, dynamic> loginData = {
-        "email": emailController.text,
-        "password": passwordController.text,
-      };
-
-      Response response = await Dio().post(
-        baseUrl,
-        data: loginData,
-        options: Options(
-          headers: {"Content-Type": "application/json"},
-          validateStatus: (status) => status! < 500,
-        ),
-      );
-
-      if (response.statusCode == 200) {
-        if (mounted) {
-          _showSnackBar("Login Successful! Redirecting...");
-          Navigator.of(context).pushReplacementNamed('/dashboard');
-        }
-      } else {
-        if (mounted) {
-          _showSnackBar("Login Failed: Invalid credentials.");
-        }
-      }
-    } catch (e) {
-      if (mounted) {
-        _showSnackBar("Login Failed: $e");
-      }
-    } finally {
-      if (mounted) {
-        setState(() {
-          isLoading = false;
-        });
-      }
+      setState(() {
+        isLoading = false;
+      });
     }
   }
 
@@ -245,7 +232,8 @@ class _LoginScreenState extends State<LoginScreen> {
         const SizedBox(height: 16),
         _buildInputField("Password", passwordController, isPassword: true),
         const SizedBox(height: 16),
-        _buildInputField("Confirm Password", confirmPasswordController, isPassword: true),
+        _buildInputField("Confirm Password", confirmPasswordController,
+            isPassword: true),
         const SizedBox(height: 24),
         _buildSubmitButton("Sign Up", _handleSignup, isLoading: isLoading),
       ],
@@ -253,7 +241,8 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   // Input Field Widget
-  Widget _buildInputField(String label, TextEditingController controller, {bool isPassword = false}) {
+  Widget _buildInputField(String label, TextEditingController controller,
+      {bool isPassword = false}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -261,24 +250,31 @@ class _LoginScreenState extends State<LoginScreen> {
         TextField(
           controller: controller,
           obscureText: isPassword,
-          decoration: InputDecoration(hintText: "Enter $label"),
+          decoration: InputDecoration(
+            hintText: "Enter $label",
+          ),
         ),
       ],
     );
   }
 
   // Submit Button Widget
-  Widget _buildSubmitButton(String text, VoidCallback onPressed, {bool isLoading = false}) {
+  Widget _buildSubmitButton(String text, VoidCallback onPressed,
+      {bool isLoading = false}) {
     return ElevatedButton(
       style: ElevatedButton.styleFrom(
         backgroundColor: const Color(0xFF8B0000),
         foregroundColor: Colors.white,
         minimumSize: const Size(double.infinity, 48),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(30),
+        ),
       ),
       onPressed: isLoading ? null : onPressed,
       child: isLoading
-          ? const CircularProgressIndicator(color: Colors.white)
+          ? const CircularProgressIndicator(
+        color: Colors.white,
+      )
           : Text(text),
     );
   }
