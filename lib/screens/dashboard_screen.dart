@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:badges/badges.dart' as badges;
-import 'package:dio/dio.dart';
 import 'cart_screen.dart';
 import 'dish_details_screen.dart';
 import 'profile_screen.dart';
@@ -20,22 +19,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
     {'id': 1, 'name': 'La baguette raffinée XXL', 'price': 99.0, 'image': 'assets/images/baguette_xxl.jpeg'},
     {'id': 2, 'name': 'Frite Raffinée', 'price': 35.0, 'image': 'assets/images/frite_raffinee.jpeg'},
     {'id': 3, 'name': 'Croissant Classique', 'price': 15.0, 'image': 'assets/images/croissant.jpeg'},
-    {'name': 'Mac and Cheese', 'price': 12.0, 'image': 'assets/images/mach.jpg'},
-    {'name': 'Classic Burger', 'price': 8.0, 'image': 'assets/images/burg.jpg'},
-    {'name': 'Spaghetti Carbonara', 'price': 15.0, 'image': 'assets/images/spag.jpg'},
-    {'name': 'Sushi Rolls', 'price': 20.0, 'image': 'assets/images/sushi.jpg'},
-    {'name': 'Margherita Pizza', 'price': 10.0, 'image': 'assets/images/pizza.jpg'},
-    {'name': 'Ramen Noodles', 'price': 18.0, 'image': 'assets/images/ramen.jpg'},
-    {'name': 'Soft Tacos', 'price': 7.0, 'image': 'assets/images/soft.jpg'},
-    {'name': 'Grilled Steak', 'price': 25.0, 'image': 'assets/images/steak.jpg'},
-    {'name': 'Couscous', 'price': 40.0, 'image': 'assets/images/couscous.webp'},
-    {'name': 'Chicken Tagine', 'price': 50.0, 'image': 'assets/images/tajine.jpg'},
-    {'name': 'Pastilla', 'price': 45.0, 'image': 'assets/images/pastille.jpg'},
-    {'name': 'Harira Soup', 'price': 25.0, 'image': 'assets/images/harira.jpg'},
-    {'name': 'Briouat', 'price': 30.0, 'image': 'assets/images/briouat.jpg'},
-    {'name': 'Rfissa', 'price': 55.0, 'image': 'assets/images/rfissa.jpg'},
-    {'name': 'Seffa', 'price': 40.0, 'image': 'assets/images/seffa.jpg'},
-    {'name': 'Zaalouk', 'price': 15.0, 'image': 'assets/images/zaalouk.jpg'},
+    {'id': 4, 'name': 'Mac and Cheese', 'price': 12.0, 'image': 'assets/images/mach.jpg'},
+    {'id': 5, 'name': 'Classic Burger', 'price': 8.0, 'image': 'assets/images/burg.jpg'},
+    {'id': 6, 'name': 'Spaghetti Carbonara', 'price': 15.0, 'image': 'assets/images/spag.jpg'},
+    {'id': 7, 'name': 'Sushi Rolls', 'price': 20.0, 'image': 'assets/images/sushi.jpg'},
+    {'id': 8, 'name': 'Margherita Pizza', 'price': 10.0, 'image': 'assets/images/pizza.jpg'},
+    {'id': 9, 'name': 'Ramen Noodles', 'price': 18.0, 'image': 'assets/images/ramen.jpg'},
+    {'id': 10, 'name': 'Soft Tacos', 'price': 7.0, 'image': 'assets/images/soft.jpg'},
   ];
 
   List<Map<String, dynamic>> filteredDishes = []; // Filtered list for search
@@ -57,31 +47,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   // Add a dish to the cart
-  Future<void> addToCart(Map<String, dynamic> dish) async {
-    final userId = 1; // Replace with the actual user ID
-    try {
-      final response = await Dio().post(
-        'http://10.0.2.2:8080/api/cart/$userId/add/${dish['id']}',
-        options: Options(headers: {"Content-Type": "application/json"}),
-      );
+  void addToCart(Map<String, dynamic> dish) {
+    setState(() {
+      cart.add(dish); // Add to cart and refresh state
+    });
 
-      if (response.statusCode == 200) {
-        setState(() {
-          cart.add(dish); // Update local cart state
-        });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("${dish['name']} added to cart!")),
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Failed to add ${dish['name']} to cart.")),
-        );
-      }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Error adding ${dish['name']} to cart: $e")),
-      );
-    }
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text("${dish['name']} added to cart!")),
+    );
   }
 
   @override
@@ -124,8 +97,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ),
           ),
           const SizedBox(height: 10),
-
-          // Search Bar
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: TextField(
@@ -144,8 +115,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ),
           ),
           const SizedBox(height: 10),
-
-          // Display dishes or "not found" message
           filteredDishes.isEmpty
               ? const Expanded(
             child: Center(
